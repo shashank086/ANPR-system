@@ -29,7 +29,7 @@ If you prefer to run the components manually using individual command prompt win
 
 #### Step 1: Open a command prompt and navigate to the project directory
 ```cmd
-cd "c:\Users\Suraj L\Downloads\ANPR final project ----- updated\ANPR"
+cd "file path"
 ```
 
 #### Step 2: Activate the virtual environment
