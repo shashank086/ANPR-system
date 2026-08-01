@@ -1,0 +1,427 @@
+{% extends "layout.html" %}
+{% block title %}Login — SmartFuel ANPR{% endblock %}
+
+{% block head %}
+<style>
+  :root {
+    --accent-amber: #f59e0b;
+  }
+
+  /* Login Card styling matching user page style */
+  .login-card-container {
+    max-width: 460px;
+    margin: 3rem auto;
+  }
+  
+  .login-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .login-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+  }
+
+  .top-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+    transition: background 0.4s ease;
+  }
+  body.admin-mode .top-bar {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  }
+
+  /* Brand Header */
+  .brand-section {
+    padding: 2rem 2rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .brand-icon {
+    width: 68px; height: 68px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    position: relative;
+    transition: transform 0.3s ease;
+  }
+  body.admin-mode .brand-icon {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  }
+  .brand-icon:hover { transform: translateY(-3px) rotate(-4deg); }
+
+  .role-icon {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .icon-user  { opacity: 1; transform: scale(1); }
+  .icon-admin { opacity: 0; transform: scale(0.7); }
+  body.admin-mode .icon-user  { opacity: 0; transform: scale(0.7); }
+  body.admin-mode .icon-admin { opacity: 1; transform: scale(1); }
+
+  .brand-title {
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #e0e7ff, #a5b4fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+    width: 100%;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .admin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(245,158,11,0.15);
+    border: 1px solid rgba(245,158,11,0.35);
+    color: #fbbf24;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.18rem 0.6rem;
+    border-radius: 20px;
+    margin-top: 0.4rem;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  body.admin-mode .admin-badge {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .brand-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-top: 0.35rem;
+  }
+
+  /* Role Tabs */
+  .role-tabs {
+    display: flex;
+    margin: 0 1.5rem;
+    background: rgba(0,0,0,0.3);
+    border-radius: 14px;
+    padding: 5px;
+    gap: 4px;
+    position: relative;
+  }
+  .tab-indicator {
+    position: absolute;
+    top: 5px; left: 5px;
+    height: calc(100% - 10px);
+    width: calc(50% - 7px);
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), background 0.35s ease;
+    z-index: 1;
+  }
+  .role-tab {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.45rem;
+    padding: 0.65rem 1rem;
+    border: none; border-radius: 10px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.88rem; font-weight: 600;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    position: relative; z-index: 2;
+  }
+  .role-tab.active { color: #fff; }
+
+  /* Form Body */
+  .form-body { padding: 1.5rem 2rem 2rem; }
+
+  .welcome-text {
+    font-size: 1rem; font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+    transition: all 0.3s ease;
+  }
+  .welcome-sub {
+    font-size: 0.8rem; color: var(--text-secondary);
+    margin-bottom: 1.4rem;
+    transition: all 0.3s ease;
+  }
+
+  .admin-notice {
+    background: rgba(245,158,11,0.08);
+    border: 1px solid rgba(245,158,11,0.22);
+    border-radius: 10px;
+    padding: 0; height: 0;
+    font-size: 0.78rem; color: #fbbf24;
+    display: flex; align-items: center; gap: 0.5rem;
+    overflow: hidden; opacity: 0;
+    transition: height 0.4s ease, opacity 0.4s ease, padding 0.4s ease, margin 0.4s ease;
+    margin-bottom: 0;
+  }
+  body.admin-mode .admin-notice {
+    height: 42px; opacity: 1;
+    padding: 0 0.85rem;
+    margin-bottom: 1.2rem;
+  }
+
+  /* Form Fields */
+  .field-group { margin-bottom: 1.1rem; }
+  .field-label {
+    font-size: 0.75rem; font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    display: block; margin-bottom: 0.4rem;
+  }
+  .field-wrap { position: relative; }
+  .field-icon {
+    position: absolute; left: 1rem; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary); font-size: 0.88rem;
+    pointer-events: none; transition: color 0.3s ease;
+  }
+  .field-input {
+    width: 100%;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    padding: 0.8rem 1rem 0.8rem 2.7rem;
+    font-size: 0.92rem;
+    outline: none; transition: all 0.3s ease;
+  }
+  .field-input::placeholder { color: rgba(156,163,175,0.45); }
+  .field-input:focus {
+    background: rgba(0,0,0,0.5);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(76,110,245,0.18);
+  }
+  .field-wrap:focus-within .field-icon { color: var(--accent-blue); }
+
+  body.admin-mode .field-input:focus {
+    border-color: var(--accent-amber);
+    box-shadow: 0 0 0 3px rgba(245,158,11,0.18);
+  }
+  body.admin-mode .field-wrap:focus-within .field-icon { color: var(--accent-amber); }
+
+  /* Submit Button */
+  .btn-submit {
+    width: 100%; padding: 0.85rem;
+    border: none; border-radius: 12px;
+    font-size: 0.96rem; font-weight: 700;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+    color: #fff;
+    display: flex; align-items: center; justify-content: center; gap: 0.55rem;
+    transition: all 0.3s ease;
+    position: relative; overflow: hidden;
+    letter-spacing: 0.02em;
+  }
+  .btn-submit::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(255,255,255,0.12);
+    opacity: 0; transition: opacity 0.3s ease;
+  }
+  .btn-submit:hover::after { opacity: 1; }
+  .btn-submit:hover { transform: translateY(-2px); }
+  .btn-submit:active { transform: translateY(0); }
+
+  body.admin-mode .btn-submit {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  }
+
+  /* Footer link */
+  .card-footer-link {
+    text-align: center; margin-top: 1.4rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 0.83rem; color: var(--text-secondary);
+  }
+  .card-footer-link a {
+    color: var(--accent-blue); text-decoration: none;
+    font-weight: 600; transition: color 0.2s ease;
+  }
+  .card-footer-link a:hover { color: #a5b4fc; text-decoration: underline; }
+  
+  .alert-box {
+    border-radius: 10px; padding: 0.7rem 1rem;
+    font-size: 0.84rem; display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 1.2rem;
+  }
+  .alert-error {
+    background: rgba(239,68,68,0.14);
+    border: 1px solid rgba(239,68,68,0.32);
+    color: #fca5a5;
+  }
+  .alert-info {
+    background: rgba(76,110,245,0.14);
+    border: 1px solid rgba(76,110,245,0.32);
+    color: #a5b4fc;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-card-container">
+  <div class="login-card">
+    <div class="top-bar"></div>
+
+    <!-- Brand -->
+    <div class="brand-section">
+      <div class="brand-icon">
+        <div class="role-icon icon-user"><i class="fas fa-gas-pump"></i></div>
+        <div class="role-icon icon-admin"><i class="fas fa-shield-halved"></i></div>
+      </div>
+      <span class="brand-title">SmartFuel</span>
+      <div class="admin-badge"><i class="fas fa-crown"></i> Admin</div>
+      <div class="brand-subtitle">Automatic Number Plate Recognition System</div>
+    </div>
+
+    <!-- Role tabs -->
+    <div class="role-tabs">
+      <button class="role-tab active" id="tabUser" type="button" onclick="selectRole('user')">
+        <i class="fas fa-user"></i> User
+      </button>
+      <button class="role-tab" id="tabAdmin" type="button" onclick="selectRole('admin')">
+        <i class="fas fa-shield-halved"></i> Admin
+      </button>
+      <div class="tab-indicator" id="tabIndicator"></div>
+    </div>
+
+    <!-- Form -->
+    <div class="form-body">
+      {% if error %}
+      <div class="alert-box alert-error">
+        <i class="fas fa-circle-exclamation"></i>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+      {% if message %}
+      <div class="alert-box alert-info">
+        <i class="fas fa-circle-check"></i>
+        <span>{{ message }}</span>
+      </div>
+      {% endif %}
+
+      <p class="welcome-text" id="welcomeText">Welcome back!</p>
+      <p class="welcome-sub" id="welcomeSub">Sign in to your account to continue.</p>
+
+      <div class="admin-notice" id="adminNotice">
+        <i class="fas fa-lock"></i> Restricted area — Admin credentials required.
+      </div>
+
+      <form method="POST" action="/login" id="loginForm" autocomplete="off" data-select-admin="{% if error and ('admin' in (error | lower)) %}true{% else %}false{% endif %}">
+        <!-- Dummy fields to trick Chrome's autofill manager -->
+        <input type="text" name="chrome_dummy_username" style="display:none;" />
+        <input type="password" name="chrome_dummy_password" style="display:none;" />
+
+        <input type="hidden" name="next" value="{{ next or '' }}" />
+        <input type="hidden" name="role" id="roleInput" value="user" />
+
+        <div class="field-group">
+          <label class="field-label" for="usernameField">Username / Email</label>
+          <div class="field-wrap">
+            <input
+              type="text" class="field-input" id="usernameField" name="username"
+              value="{{ username or '' }}"
+              placeholder="Enter your username or email"
+              autocomplete="off" required readonly
+              onfocus="this.removeAttribute('readonly');"
+              onmouseover="this.removeAttribute('readonly');"
+            />
+            <i class="fas fa-user field-icon"></i>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="passwordField">Password</label>
+          <div class="field-wrap">
+            <input
+              type="password" class="field-input" id="passwordField" name="password"
+              placeholder="Enter your password"
+              autocomplete="new-password" required readonly
+              onfocus="this.removeAttribute('readonly');"
+              onmouseover="this.removeAttribute('readonly');"
+            />
+            <i class="fas fa-lock field-icon"></i>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="loginBtn">
+          <i class="fas fa-right-to-bracket"></i>
+          <span id="btnText">Sign In as User</span>
+        </button>
+      </form>
+
+      <div class="card-footer-link" id="loginFooter">
+        <span>New here? </span>
+        <a href="/register">Create an account</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function selectRole(role) {
+    const roleInput   = document.getElementById('roleInput');
+    const tabUser     = document.getElementById('tabUser');
+    const tabAdmin    = document.getElementById('tabAdmin');
+    const indicator   = document.getElementById('tabIndicator');
+    const welcomeText = document.getElementById('welcomeText');
+    const welcomeSub  = document.getElementById('welcomeSub');
+    const btnText     = document.getElementById('btnText');
+    const footer      = document.getElementById('loginFooter');
+
+    roleInput.value = role;
+
+    if (role === 'admin') {
+      document.body.classList.add('admin-mode');
+      tabUser.classList.remove('active');
+      tabAdmin.classList.add('active');
+      indicator.style.transform   = 'translateX(calc(100% + 4px))';
+      indicator.style.background  = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
+      welcomeText.textContent = 'Admin Access';
+      welcomeSub.textContent  = 'Sign in with your administrator credentials.';
+      btnText.textContent     = 'Sign In as Admin';
+      footer.style.display    = 'none';
+    } else {
+      document.body.classList.remove('admin-mode');
+      tabAdmin.classList.remove('active');
+      tabUser.classList.add('active');
+      indicator.style.transform   = 'translateX(0)';
+      indicator.style.background  = 'linear-gradient(135deg, #4c6ef5, #7c3aed)';
+      welcomeText.textContent = 'Welcome back!';
+      welcomeSub.textContent  = 'Sign in to your account to continue.';
+      btnText.textContent     = 'Sign In as User';
+      footer.style.display    = 'block';
+    }
+  }
+
+  // If server returned an error while on admin tab, keep it selected
+  document.addEventListener("DOMContentLoaded", function() {
+    const form = document.getElementById('loginForm');
+    if (form && form.getAttribute('data-select-admin') === 'true') {
+      selectRole('admin');
+    }
+  });
+</script>
+{% endblock %}

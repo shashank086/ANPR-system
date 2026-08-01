@@ -1,0 +1,71 @@
+========================================================================
+🚀 SMARTFUEL ANPR SYSTEM — HOW TO ADD AN ADMINISTRATOR ACCOUNT
+========================================================================
+
+Admin privileges grant full access to the SmartFuel Admin Dashboard,
+which includes visual analytics charts, stats, registered user details,
+user deletion, and the entire vehicle registry.
+
+You can add or promote administrator accounts using any of the following
+methods:
+
+------------------------------------------------------------------------
+Method 1: Programmatically via Python Command Line
+------------------------------------------------------------------------
+Open a terminal in the project directory, run Python, and enter the 
+following commands:
+
+    from backend.utils.user_store import FileUserStore
+    
+    # Initialize the user store
+    store = FileUserStore()
+    
+    # Add a new admin account
+    store.create_user(
+        username="new_admin_username",
+        email="admin_email@example.com",
+        date_of_birth="2000-01-01",
+        password="your_secure_password",
+        role="admin"  # <--- MUST be 'admin' to grant access
+    )
+
+------------------------------------------------------------------------
+Method 2: Modifying Default Seeding in Code
+------------------------------------------------------------------------
+On very first startup, the system automatically seeds a default admin.
+You can customize the username and password by opening this file:
+  backend/utils/user_store.py
+
+Locate these lines near the top of the `FileUserStore` class:
+  DEFAULT_ADMIN_USERNAME = "admin"
+  DEFAULT_ADMIN_PASSWORD = "admin@123"
+
+Change these to your preferred defaults.
+
+------------------------------------------------------------------------
+Method 3: Direct Database Update (MongoDB Atlas)
+------------------------------------------------------------------------
+If the system is connected to MongoDB Atlas, you can change any 
+registered user's role using a Mongo client (such as MongoDB Compass
+or Mongo Shell):
+
+Query / command:
+  db.users.updateOne(
+    { "username": "existing_username" },
+    { "$set": { "role": "admin" } }
+  )
+
+------------------------------------------------------------------------
+Method 4: Direct Local Fallback JSON Edit
+------------------------------------------------------------------------
+If the database fallback is active, open the file:
+  data/users.json
+
+Locate the user's block and modify the "role" field:
+  "username_here": {
+    "email": "user@example.com",
+    "date_of_birth": "2000-01-01",
+    "password_hash": "...",
+    "role": "admin"  <--- Change 'user' to 'admin'
+  }
+========================================================================

@@ -1,0 +1,1068 @@
+{% extends "layout.html" %}
+{% block title %}Admin Dashboard — SmartFuel{% endblock %}
+
+{% block head %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --admin-accent: #4c6ef5;
+    --admin-accent-soft: rgba(76,110,245,0.12);
+    --admin-accent-border: rgba(76,110,245,0.25);
+    --admin-gold: #f59e0b;
+    --admin-gold-soft: rgba(245,158,11,0.12);
+    --admin-gold-border: rgba(245,158,11,0.25);
+    --stat-blue: #4c6ef5;
+    --stat-purple: #7c3aed;
+    --stat-green: #10b981;
+    --stat-red: #ef4444;
+    --stat-amber: #f59e0b;
+    --stat-cyan: #06b6d4;
+    --card-bg: #1e2139;
+    --card-border: #2d3748;
+  }
+
+  /* ── Page hero ── */
+  .admin-hero {
+    background: linear-gradient(135deg, #0a0e27 0%, #141b2d 100%);
+    border-bottom: 1px solid var(--card-border);
+    padding: 2.5rem 0 2rem;
+    position: relative;
+    overflow: hidden;
+    margin-top: -1.5rem;
+  }
+  .admin-hero-inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .hero-left { display: flex; align-items: center; gap: 1.25rem; }
+  .hero-icon {
+    width: 60px; height: 60px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+  }
+  .hero-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #e0e7ff, #a5b4fc, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  .hero-sub {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin-top: 0.2rem;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(245,158,11,0.15);
+    border: 1px solid rgba(245,158,11,0.3);
+    color: #fbbf24;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.35rem 0.9rem;
+    border-radius: 20px;
+  }
+  .btn-refresh {
+    background: rgba(76,110,245,0.12);
+    border: 1px solid rgba(76,110,245,0.3);
+    color: #a5b4fc;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.6rem 1.25rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .btn-refresh:hover {
+    background: rgba(76,110,245,0.22);
+    border-color: rgba(76,110,245,0.5);
+    transform: translateY(-1px);
+  }
+  .btn-refresh.spinning i { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Stat cards ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 1.4rem 1.25rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    cursor: default;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+    background: var(--stat-color, #4c6ef5);
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+    border-color: var(--stat-color, #4c6ef5);
+  }
+  .stat-icon-wrap {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--stat-icon-bg, rgba(76,110,245,0.12));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem;
+    color: var(--stat-color, #4c6ef5);
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+  }
+  .stat-card:hover .stat-icon-wrap { transform: scale(1.1) rotate(-5deg); }
+  .stat-value {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #e5e7eb;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+    transition: all 0.8s ease;
+  }
+  .stat-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+  .stat-delta {
+    position: absolute;
+    top: 1rem; right: 1rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    background: var(--stat-icon-bg, rgba(76,110,245,0.12));
+    color: var(--stat-color, #4c6ef5);
+  }
+
+  /* ── Section headers ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #e5e7eb;
+  }
+  .section-title i { color: var(--admin-accent); }
+
+  /* ── Charts row ── */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+  }
+  @media (max-width: 768px) {
+    .charts-row { grid-template-columns: 1fr; }
+  }
+  .chart-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+  }
+  .chart-card:hover {
+    border-color: rgba(76,110,245,0.3);
+    box-shadow: 0 8px 24px rgba(76,110,245,0.1);
+  }
+  .chart-container {
+    position: relative;
+    width: 100%;
+  }
+  .doughnut-wrap {
+    max-width: 220px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .doughnut-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+  }
+  .doughnut-center .dc-val {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #e5e7eb;
+    line-height: 1;
+  }
+  .doughnut-center .dc-lbl {
+    font-size: 0.7rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Panel card ── */
+  .panel-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 1.75rem;
+    transition: all 0.3s ease;
+  }
+  .panel-card:hover { border-color: rgba(76,110,245,0.3); }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid var(--card-border);
+    background: linear-gradient(135deg, var(--admin-accent), var(--stat-purple));
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .panel-header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+  .panel-header-title i { color: #ffffff; }
+
+  /* ── Table ── */
+  .admin-table-wrap {
+    overflow-x: auto;
+  }
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .admin-table thead tr {
+    background: rgba(0,0,0,0.3);
+  }
+  .admin-table th {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--card-border);
+  }
+  .admin-table td {
+    padding: 0.9rem 1.25rem;
+    font-size: 0.88rem;
+    color: #d1d5db;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+  }
+  .admin-table tbody tr { transition: background 0.2s ease; }
+  .admin-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+  .admin-table tbody tr:last-child td { border-bottom: none; }
+
+  /* ── Badges ── */
+  .badge-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .badge-admin {
+    background: rgba(245,158,11,0.15);
+    border: 1px solid rgba(245,158,11,0.3);
+    color: #fbbf24;
+  }
+  .badge-user {
+    background: rgba(76,110,245,0.15);
+    border: 1px solid rgba(76,110,245,0.3);
+    color: #93c5fd;
+  }
+  .badge-eligible {
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.3);
+    color: #6ee7b7;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  .badge-ineligible {
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #fca5a5;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  .badge-petrol {
+    background: rgba(16,185,129,0.12);
+    border: 1px solid rgba(16,185,129,0.25);
+    color: #6ee7b7;
+    padding: 0.2rem 0.55rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+  .badge-diesel {
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.25);
+    color: #fca5a5;
+    padding: 0.2rem 0.55rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  /* ── Delete btn ── */
+  .btn-delete {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.25);
+    color: #fca5a5;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .btn-delete:hover {
+    background: rgba(239,68,68,0.22);
+    border-color: rgba(239,68,68,0.5);
+    transform: translateY(-1px);
+  }
+
+  /* ── Quick actions ── */
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.9rem;
+    margin-bottom: 2rem;
+  }
+  .quick-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 1.25rem 1rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    color: #9ca3af;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .quick-btn i {
+    font-size: 1.5rem;
+    color: var(--qb-color, #4c6ef5);
+    transition: transform 0.3s ease;
+  }
+  .quick-btn:hover {
+    border-color: var(--qb-color, #4c6ef5);
+    background: rgba(76,110,245,0.06);
+    color: #e5e7eb;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+  .quick-btn:hover i { transform: scale(1.2); }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #4b5563;
+  }
+  .empty-state i { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+  /* ── Loading skeleton ── */
+  .skeleton {
+    background: linear-gradient(90deg, #1e2a45 25%, #253450 50%, #1e2a45 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 6px;
+    height: 2rem;
+  }
+  @keyframes skeleton-loading {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ── Toast ── */
+  .toast-container {
+    position: fixed;
+    top: 1.25rem; right: 1.25rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .toast-msg {
+    background: #1e2a45;
+    border: 1px solid #2d3a55;
+    border-radius: 12px;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.85rem;
+    color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    animation: toast-in 0.3s ease;
+    min-width: 260px;
+  }
+  .toast-msg.success { border-color: rgba(16,185,129,0.4); }
+  .toast-msg.success i { color: #10b981; }
+  .toast-msg.error { border-color: rgba(239,68,68,0.4); }
+  .toast-msg.error i { color: #ef4444; }
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  /* ── Misc ── */
+  .mono { font-family: 'Fira Code', 'Courier New', monospace; font-size: 0.82rem; }
+  .text-muted-sm { font-size: 0.78rem; color: #6b7280; }
+  .search-input {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    color: #e5e7eb;
+    padding: 0.5rem 0.9rem 0.5rem 2.25rem;
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: all 0.3s ease;
+    min-width: 220px;
+  }
+  .search-input:focus {
+    border-color: rgba(76,110,245,0.5);
+    box-shadow: 0 0 0 3px rgba(76,110,245,0.15);
+  }
+  .search-wrap { position: relative; }
+  .search-wrap i {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 0.8rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Admin hero -->
+<div class="admin-hero">
+  <div class="container">
+    <div class="admin-hero-inner">
+      <div class="hero-left">
+        <div class="hero-icon"><i class="fas fa-shield-halved"></i></div>
+        <div>
+          <div class="hero-title">Admin Dashboard</div>
+          <div class="hero-sub">
+            Logged in as <strong style="color:#fbbf24">{{ session.get('username') }}</strong>
+            <span class="hero-badge ms-2"><i class="fas fa-crown"></i> Administrator</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn-refresh" id="refreshBtn" onclick="refreshAll()">
+        <i class="fas fa-rotate-right" id="refreshIcon"></i> Refresh Stats
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="margin-top:2rem">
+
+  <!-- ── Stat cards ── -->
+  <div class="stats-grid" id="statsGrid">
+    <!-- Injected by JS -->
+    <div class="stat-card" style="--stat-color:#4c6ef5;--stat-icon-bg:rgba(76,110,245,0.12)">
+      <div class="stat-icon-wrap"><i class="fas fa-users"></i></div>
+      <div class="stat-value skeleton" id="sv-total-users" style="width:60%;height:2.5rem">&nbsp;</div>
+      <div class="stat-label">Total Users</div>
+    </div>
+    <div class="stat-card" style="--stat-color:#7c3aed;--stat-icon-bg:rgba(124,58,237,0.12)">
+      <div class="stat-icon-wrap"><i class="fas fa-user-shield"></i></div>
+      <div class="stat-value skeleton" id="sv-admin-count" style="width:50%;height:2.5rem">&nbsp;</div>
+      <div class="stat-label">Admins</div>
+    </div>
+    <div class="stat-card" style="--stat-color:#06b6d4;--stat-icon-bg:rgba(6,182,212,0.12)">
+      <div class="stat-icon-wrap"><i class="fas fa-user"></i></div>
+      <div class="stat-value skeleton" id="sv-user-count" style="width:50%;height:2.5rem">&nbsp;</div>
+      <div class="stat-label">Registered Users</div>
+    </div>
+    <div class="stat-card" style="--stat-color:#f59e0b;--stat-icon-bg:rgba(245,158,11,0.12)">
+      <div class="stat-icon-wrap"><i class="fas fa-car"></i></div>
+      <div class="stat-value skeleton" id="sv-total-vehicles" style="width:60%;height:2.5rem">&nbsp;</div>
+      <div class="stat-label">Total Vehicles</div>
+    </div>
+    <div class="stat-card" style="--stat-color:#10b981;--stat-icon-bg:rgba(16,185,129,0.12)">
+      <div class="stat-icon-wrap"><i class="fas fa-gas-pump"></i></div>
+      <div class="stat-value skeleton" id="sv-petrol" style="width:50%;height:2.5rem">&nbsp;</div>
+      <div class="stat-label">Petrol Vehicles</div>
+    </div>
+    <div class="stat-card" style="--stat-color:#ef4444;--stat-icon-bg:rgba(239,68,68,0.12)">
+      <div class="stat-icon-wrap"><i class="fas fa-oil-can"></i></div>
+      <div class="stat-value skeleton" id="sv-diesel" style="width:50%;height:2.5rem">&nbsp;</div>
+      <div class="stat-label">Diesel Vehicles</div>
+    </div>
+  </div>
+
+  <!-- ── Charts ── -->
+  <div class="charts-row">
+    <!-- Doughnut -->
+    <div class="chart-card">
+      <div class="section-header">
+        <div class="section-title"><i class="fas fa-chart-pie"></i> Fuel Split</div>
+      </div>
+      <div class="doughnut-wrap">
+        <canvas id="fuelChart" height="220"></canvas>
+        <div class="doughnut-center">
+          <div class="dc-val" id="doughnut-center-val">—</div>
+          <div class="dc-lbl">Total</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:1.5rem;margin-top:1rem;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#9ca3af">
+          <span style="width:10px;height:10px;border-radius:50%;background:#10b981;display:inline-block"></span> Petrol
+        </div>
+        <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#9ca3af">
+          <span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block"></span> Diesel
+        </div>
+      </div>
+    </div>
+
+    <!-- Bar chart -->
+    <div class="chart-card">
+      <div class="section-header">
+        <div class="section-title"><i class="fas fa-chart-bar"></i> Vehicles by State</div>
+      </div>
+      <div class="chart-container" style="height:230px">
+        <canvas id="stateChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Quick Actions ── -->
+  <div class="section-header">
+    <div class="section-title"><i class="fas fa-bolt"></i> Quick Actions</div>
+  </div>
+  <div class="quick-actions">
+    <a href="/add" class="quick-btn" style="--qb-color:#10b981">
+      <i class="fas fa-circle-plus"></i> Add Vehicle
+    </a>
+    <a href="/check" class="quick-btn" style="--qb-color:#4c6ef5">
+      <i class="fas fa-magnifying-glass"></i> Check Plate
+    </a>
+    <a href="/upload" class="quick-btn" style="--qb-color:#7c3aed">
+      <i class="fas fa-upload"></i> Upload Image
+    </a>
+    <a href="/camera" class="quick-btn" style="--qb-color:#06b6d4">
+      <i class="fas fa-camera"></i> Live Camera
+    </a>
+    <a href="/atlas-info" class="quick-btn" style="--qb-color:#f59e0b">
+      <i class="fas fa-database"></i> Atlas Info
+    </a>
+    <a href="/" class="quick-btn" style="--qb-color:#ec4899">
+      <i class="fas fa-house"></i> Home
+    </a>
+  </div>
+
+  <!-- ── Users Table ── -->
+  <div class="panel-card">
+    <div class="panel-header">
+      <div class="panel-header-title">
+        <i class="fas fa-users"></i> Registered Users
+        <span style="font-size:0.75rem;color:#6b7280;font-weight:500;margin-left:0.35rem" id="userCountBadge"></span>
+      </div>
+      <div class="search-wrap">
+        <i class="fas fa-search"></i>
+        <input type="text" class="search-input" id="userSearch" placeholder="Search users…" oninput="filterUsers()" />
+      </div>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table" id="usersTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Date of Birth</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+          <tr>
+            <td colspan="6" class="empty-state"><i class="fas fa-spinner fa-spin" style="color:#f59e0b"></i><br>Loading users…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Vehicles Table ── -->
+  <div class="panel-card">
+    <div class="panel-header">
+      <div class="panel-header-title">
+        <i class="fas fa-car"></i> Vehicle Registry
+        <span style="font-size:0.75rem;color:#6b7280;font-weight:500;margin-left:0.35rem" id="vehicleCountBadge"></span>
+      </div>
+      <div class="search-wrap">
+        <i class="fas fa-search"></i>
+        <input type="text" class="search-input" id="vehicleSearch" placeholder="Search vehicles…" oninput="filterVehicles()" />
+      </div>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table" id="vehiclesTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Reg. Number</th>
+            <th>Owner</th>
+            <th>Make / Model</th>
+            <th>Fuel</th>
+            <th>State</th>
+            <th>Age (yrs)</th>
+            <th>Eligibility</th>
+          </tr>
+        </thead>
+        <tbody id="vehiclesTableBody">
+          <tr>
+            <td colspan="8" class="empty-state"><i class="fas fa-spinner fa-spin" style="color:#f59e0b"></i><br>Loading vehicles…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="vehiclesPagination" style="display:flex;justify-content:flex-end;align-items:center;padding:0.85rem 1.25rem;border-top:1px solid var(--card-border);gap:0.5rem;flex-wrap:wrap"></div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ─────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────
+let allUsers    = [];
+let allVehicles = [];
+let vPage       = 1;
+const vPerPage  = 15;
+let fuelChart   = null;
+let stateChart  = null;
+
+// ─────────────────────────────────────────────────────────────
+// Toast
+// ─────────────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const icon = type === 'success' ? 'fa-circle-check' : 'fa-circle-xmark';
+  const el = document.createElement('div');
+  el.className = `toast-msg ${type}`;
+  el.innerHTML = `<i class="fas ${icon}"></i> ${msg}`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(20px)'; el.style.transition = '0.4s'; setTimeout(() => el.remove(), 400); }, 3200);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Animated counter
+// ─────────────────────────────────────────────────────────────
+function animateCount(el, target, duration = 700) {
+  let start = 0;
+  const step = (timestamp) => {
+    if (!start) start = timestamp;
+    const progress = Math.min((timestamp - start) / duration, 1);
+    el.textContent = Math.floor(progress * target);
+    if (progress < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  };
+  requestAnimationFrame(step);
+}
+
+function setStatValue(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('skeleton');
+  el.style.width = '';
+  el.style.height = '';
+  animateCount(el, Number(val) || 0);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Load Stats
+// ─────────────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const r = await fetch('/api/admin/stats');
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    const s = d.stats;
+
+    setStatValue('sv-total-users',    s.total_users);
+    setStatValue('sv-admin-count',    s.admin_count);
+    setStatValue('sv-user-count',     s.user_count);
+    setStatValue('sv-total-vehicles', s.total_vehicles);
+    setStatValue('sv-petrol',         s.petrol_count);
+    setStatValue('sv-diesel',         s.diesel_count);
+
+    renderFuelChart(s.petrol_count, s.diesel_count);
+  } catch (e) {
+    showToast('Failed to load stats: ' + e.message, 'error');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Fuel Doughnut Chart
+// ─────────────────────────────────────────────────────────────
+function renderFuelChart(petrol, diesel) {
+  const ctx = document.getElementById('fuelChart').getContext('2d');
+  const total = petrol + diesel;
+  document.getElementById('doughnut-center-val').textContent = total || '—';
+
+  if (fuelChart) fuelChart.destroy();
+  fuelChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Petrol', 'Diesel'],
+      datasets: [{
+        data: [petrol || 0.0001, diesel || 0.0001],
+        backgroundColor: ['#10b981', '#ef4444'],
+        borderColor: ['#065f46', '#991b1b'],
+        borderWidth: 2,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      cutout: '70%',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e2a45',
+          titleColor: '#e5e7eb',
+          bodyColor: '#9ca3af',
+          borderColor: '#2d3a55',
+          borderWidth: 1,
+          callbacks: {
+            label: (ctx) => ` ${ctx.label}: ${ctx.raw} vehicles`
+          }
+        }
+      }
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// Load Users
+// ─────────────────────────────────────────────────────────────
+async function loadUsers() {
+  try {
+    const r = await fetch('/api/admin/users');
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    allUsers = d.users;
+    renderUsersTable(allUsers);
+    document.getElementById('userCountBadge').textContent = `(${allUsers.length})`;
+  } catch (e) {
+    document.getElementById('usersTableBody').innerHTML =
+      `<tr><td colspan="6" class="empty-state" style="color:#ef4444"><i class="fas fa-circle-xmark"></i><br>${e.message}</td></tr>`;
+  }
+}
+
+function renderUsersTable(users) {
+  const tbody = document.getElementById('usersTableBody');
+  if (!users.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-users-slash"></i><br>No users found</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = users.map((u, i) => `
+    <tr id="user-row-${encodeURIComponent(u.username)}">
+      <td class="text-muted-sm">${i + 1}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:0.6rem">
+          <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#4c6ef5,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:#fff;flex-shrink:0">
+            ${(u.username || '?')[0].toUpperCase()}
+          </div>
+          <span style="font-weight:600;color:#e5e7eb">${escapeHtml(u.username)}</span>
+        </div>
+      </td>
+      <td class="text-muted-sm">${escapeHtml(u.email || '—')}</td>
+      <td>
+        ${u.role === 'admin'
+          ? `<span class="badge-role badge-admin"><i class="fas fa-crown"></i> Admin</span>`
+          : `<span class="badge-role badge-user"><i class="fas fa-user"></i> User</span>`}
+      </td>
+      <td class="text-muted-sm">${escapeHtml(u.date_of_birth || '—')}</td>
+      <td>
+        ${u.role === 'admin'
+          ? `<span style="color:#6b7280;font-size:0.75rem">Protected</span>`
+          : `<button class="btn-delete" onclick="deleteUser('${escapeHtml(u.username)}')">
+               <i class="fas fa-trash-can"></i> Delete
+             </button>`}
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterUsers() {
+  const q = document.getElementById('userSearch').value.toLowerCase();
+  const filtered = allUsers.filter(u =>
+    (u.username || '').toLowerCase().includes(q) ||
+    (u.email || '').toLowerCase().includes(q) ||
+    (u.role || '').toLowerCase().includes(q)
+  );
+  renderUsersTable(filtered);
+}
+
+async function deleteUser(username) {
+  if (!confirm(`Delete user "${username}"? This cannot be undone.`)) return;
+  try {
+    const r = await fetch(`/api/admin/users/${encodeURIComponent(username)}`, { method: 'DELETE' });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+    showToast(`User "${username}" deleted successfully.`, 'success');
+    allUsers = allUsers.filter(u => u.username !== username);
+    renderUsersTable(allUsers);
+    document.getElementById('userCountBadge').textContent = `(${allUsers.length})`;
+    // Refresh stat card
+    document.getElementById('sv-total-users').textContent = allUsers.length;
+  } catch (e) {
+    showToast('Failed to delete user: ' + e.message, 'error');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Load Vehicles
+// ─────────────────────────────────────────────────────────────
+async function loadVehicles() {
+  try {
+    const r = await fetch('/api/vehicles?per_page=500');
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message || 'Unknown error');
+    allVehicles = d.vehicles || [];
+    renderVehiclesTable();
+    renderStateChart();
+    document.getElementById('vehicleCountBadge').textContent = `(${allVehicles.length})`;
+  } catch (e) {
+    document.getElementById('vehiclesTableBody').innerHTML =
+      `<tr><td colspan="8" class="empty-state" style="color:#ef4444"><i class="fas fa-circle-xmark"></i><br>${e.message}</td></tr>`;
+  }
+}
+
+function getFilteredVehicles() {
+  const q = (document.getElementById('vehicleSearch')?.value || '').toLowerCase();
+  if (!q) return allVehicles;
+  return allVehicles.filter(v =>
+    (v.registration_number || '').toLowerCase().includes(q) ||
+    (v.owner_name || '').toLowerCase().includes(q) ||
+    (v.vehicle_make || '').toLowerCase().includes(q) ||
+    (v.vehicle_model || '').toLowerCase().includes(q) ||
+    (v.fuel_type || '').toLowerCase().includes(q) ||
+    (v.state || '').toLowerCase().includes(q)
+  );
+}
+
+function renderVehiclesTable() {
+  const filtered  = getFilteredVehicles();
+  const total     = filtered.length;
+  const totalPages = Math.ceil(total / vPerPage) || 1;
+  if (vPage > totalPages) vPage = totalPages;
+
+  const slice = filtered.slice((vPage - 1) * vPerPage, vPage * vPerPage);
+  const tbody = document.getElementById('vehiclesTableBody');
+
+  if (!slice.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fas fa-car-on"></i><br>No vehicles found</div></td></tr>`;
+  } else {
+    tbody.innerHTML = slice.map((v, i) => {
+      const el = v.fuel_eligibility?.eligible;
+      const ft  = (v.fuel_type || '').toUpperCase();
+      return `
+        <tr>
+          <td class="text-muted-sm">${(vPage - 1) * vPerPage + i + 1}</td>
+          <td><span class="mono" style="color:#fbbf24">${escapeHtml(v.registration_number || '—')}</span></td>
+          <td style="font-weight:500">${escapeHtml(v.owner_name || '—')}</td>
+          <td class="text-muted-sm">${escapeHtml(v.vehicle_make || '')} ${escapeHtml(v.vehicle_model || '')}</td>
+          <td>
+            ${ft === 'PETROL'
+              ? `<span class="badge-petrol"><i class="fas fa-gas-pump"></i> Petrol</span>`
+              : ft === 'DIESEL'
+              ? `<span class="badge-diesel"><i class="fas fa-oil-can"></i> Diesel</span>`
+              : escapeHtml(v.fuel_type || '—')}
+          </td>
+          <td class="text-muted-sm">${escapeHtml(v.state || '—')}</td>
+          <td class="text-muted-sm">${v.age_years != null ? v.age_years.toFixed(1) : '—'}</td>
+          <td>
+            ${el === true
+              ? `<span class="badge-eligible"><i class="fas fa-circle-check"></i> Eligible</span>`
+              : el === false
+              ? `<span class="badge-ineligible"><i class="fas fa-circle-xmark"></i> Ineligible</span>`
+              : '<span class="text-muted-sm">—</span>'}
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  // Pagination
+  const pag = document.getElementById('vehiclesPagination');
+  pag.innerHTML = '';
+  if (totalPages > 1) {
+    const btn = (label, page, disabled, active) => {
+      const b = document.createElement('button');
+      b.innerHTML = label;
+      b.disabled = disabled;
+      b.style.cssText = `padding:0.35rem 0.75rem;border-radius:8px;border:1px solid ${active ? '#f59e0b' : '#1e2a45'};background:${active ? 'rgba(245,158,11,0.2)' : 'rgba(0,0,0,0.3)'};color:${active ? '#fbbf24' : '#9ca3af'};cursor:${disabled ? 'not-allowed' : 'pointer'};font-size:0.8rem;transition:all 0.2s`;
+      b.onclick = () => { vPage = page; renderVehiclesTable(); };
+      return b;
+    };
+    pag.appendChild(btn('&laquo;', 1, vPage === 1, false));
+    pag.appendChild(btn('&lsaquo;', vPage - 1, vPage === 1, false));
+    const label = document.createElement('span');
+    label.textContent = `Page ${vPage} / ${totalPages}`;
+    label.style.cssText = 'font-size:0.8rem;color:#6b7280;padding:0 0.5rem';
+    pag.appendChild(label);
+    pag.appendChild(btn('&rsaquo;', vPage + 1, vPage === totalPages, false));
+    pag.appendChild(btn('&raquo;', totalPages, vPage === totalPages, false));
+  }
+}
+
+function filterVehicles() {
+  vPage = 1;
+  renderVehiclesTable();
+}
+
+// ─────────────────────────────────────────────────────────────
+// State Bar Chart
+// ─────────────────────────────────────────────────────────────
+function renderStateChart() {
+  const stateMap = {};
+  allVehicles.forEach(v => {
+    const s = v.state || 'Unknown';
+    stateMap[s] = (stateMap[s] || 0) + 1;
+  });
+  const sorted  = Object.entries(stateMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const labels  = sorted.map(e => e[0]);
+  const values  = sorted.map(e => e[1]);
+
+  const ctx = document.getElementById('stateChart').getContext('2d');
+  if (stateChart) stateChart.destroy();
+  stateChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Vehicles',
+        data: values,
+        backgroundColor: 'rgba(76,110,245,0.7)',
+        borderColor: '#4c6ef5',
+        borderWidth: 1,
+        borderRadius: 6,
+        hoverBackgroundColor: 'rgba(124,58,237,0.8)',
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e2a45',
+          titleColor: '#e5e7eb',
+          bodyColor: '#9ca3af',
+          borderColor: '#2d3a55',
+          borderWidth: 1,
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#6b7280', font: { size: 11 } },
+          grid: { color: 'rgba(255,255,255,0.04)' }
+        },
+        y: {
+          ticks: { color: '#6b7280', font: { size: 11 }, stepSize: 1 },
+          grid: { color: 'rgba(255,255,255,0.06)' },
+          beginAtZero: true,
+        }
+      }
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// Utilities
+// ─────────────────────────────────────────────────────────────
+function escapeHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function refreshAll() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  btn.disabled = true;
+  await Promise.all([loadStats(), loadUsers(), loadVehicles()]);
+  btn.classList.remove('spinning');
+  btn.disabled = false;
+  showToast('Dashboard refreshed!', 'success');
+}
+
+// ─────────────────────────────────────────────────────────────
+// Bootstrap
+// ─────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadStats();
+  loadUsers();
+  loadVehicles();
+});
+</script>
+{% endblock %}

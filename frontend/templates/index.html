@@ -1,0 +1,503 @@
+{% extends "layout.html" %}
+
+{% block title %}Home - SmartFuel ANPR System{% endblock %}
+
+{% block head %}
+<style>
+  .custom-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 6px;
+    background-color: rgba(30, 41, 59, 0.4);
+    border: 1px solid transparent;
+  }
+  .badge-green {
+    border-color: rgba(16, 185, 129, 0.35);
+    color: #10b981;
+  }
+  .badge-blue {
+    border-color: rgba(59, 130, 246, 0.35);
+    color: #3b82f6;
+  }
+  .badge-cyan {
+    border-color: rgba(6, 182, 212, 0.35);
+    color: #06b6d4;
+  }
+
+  .custom-feature-card {
+    background-color: #1e2139; /* Card body dark bg */
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .custom-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+  }
+  .custom-card-header {
+    background: linear-gradient(135deg, #6366f1, #7c3aed); /* Purple header banner */
+    color: #fff;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-bottom: none;
+  }
+  .custom-card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+  }
+  .custom-card-icon {
+    font-size: 3rem;
+    line-height: 1;
+  }
+  
+  .text-sky-blue {
+    color: #38bdf8 !important;
+  }
+  .text-green {
+    color: #10b981 !important;
+  }
+  .text-cyan {
+    color: #06b6d4 !important;
+  }
+  .text-yellow {
+    color: #f59e0b !important;
+  }
+  
+  .btn-upload-custom {
+    background: linear-gradient(135deg, #6366f1, #7c3aed);
+    color: white;
+    border: none;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: opacity 0.2s;
+  }
+  .btn-upload-custom:hover {
+    opacity: 0.9;
+    color: white;
+  }
+  
+  .btn-camera-custom {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: opacity 0.2s;
+  }
+  .btn-camera-custom:hover {
+    opacity: 0.9;
+    color: white;
+  }
+
+  .btn-check-custom {
+    background-color: #0ea5e9;
+    color: white;
+    border: none;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: opacity 0.2s;
+  }
+  .btn-check-custom:hover {
+    opacity: 0.9;
+    color: white;
+  }
+
+  .btn-add-custom {
+    background-color: #f59e0b;
+    color: white;
+    border: none;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: opacity 0.2s;
+  }
+  .btn-add-custom:hover {
+    opacity: 0.9;
+    color: white;
+  }
+
+  .custom-section-header {
+    background: linear-gradient(135deg, #6366f1, #7c3aed);
+    color: #fff;
+    padding: 12px 20px;
+    font-weight: 600;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .plate-item {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin: 4px;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .plate-item:hover {
+    background-color: rgba(76, 110, 245, 0.15);
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+  }
+  .state-title {
+    border-bottom: 2px solid var(--accent-blue);
+    padding-bottom: 5px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    color: var(--accent-blue);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Subtitle & Badges -->
+    <div class="text-center mb-5 mt-2">
+        <h2 class="text-secondary" style="font-weight: 500; font-size: 1.25rem; letter-spacing: 0.5px; opacity: 0.85;">
+            Automatic Number Plate Recognition &amp; Fuel Eligibility Enforcement
+        </h2>
+        <div class="mt-3 d-flex gap-2 justify-content-center flex-wrap">
+            <span class="custom-badge badge-green">
+                <i class="fas fa-check-circle me-1"></i>AI-Powered Detection
+            </span>
+            <span class="custom-badge badge-blue">
+                <i class="fas fa-database me-1"></i>MongoDB Atlas
+            </span>
+            <span class="custom-badge badge-cyan">
+                <i class="fas fa-bolt me-1"></i>Ultra-Fast Processing
+            </span>
+        </div>
+    </div>
+    
+    <!-- 4 Core Feature Cards -->
+    <div class="row g-4 mb-5">
+        <!-- Card 1: Upload Image -->
+        <div class="col-md-3">
+            <div class="custom-feature-card h-100">
+                <div class="custom-card-header">
+                    <i class="fas fa-upload me-2"></i>Upload Image
+                </div>
+                <div class="custom-card-body p-4">
+                    <div class="custom-card-icon text-sky-blue my-3">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <p class="text-secondary small mb-4">
+                        Upload a license plate image for instant fuel eligibility verification
+                    </p>
+                    <a href="/upload" class="btn btn-upload-custom w-100 py-2">
+                        <i class="fas fa-upload me-1"></i>Upload Now
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Live Camera -->
+        <div class="col-md-3">
+            <div class="custom-feature-card h-100">
+                <div class="custom-card-header">
+                    <i class="fas fa-video me-2"></i>Live Camera
+                </div>
+                <div class="custom-card-body p-4">
+                    <div class="custom-card-icon text-green my-3">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <p class="text-secondary small mb-4">
+                        Real-time license plate detection using your device camera
+                    </p>
+                    <a href="/camera" class="btn btn-camera-custom w-100 py-2">
+                        <i class="fas fa-camera me-1"></i>Open Camera
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Manual Check -->
+        <div class="col-md-3">
+            <div class="custom-feature-card h-100">
+                <div class="custom-card-header">
+                    <i class="fas fa-keyboard me-2"></i>Manual Check
+                </div>
+                <div class="custom-card-body p-4">
+                    <div class="custom-card-icon text-cyan my-3">
+                        <i class="fas fa-keyboard"></i>
+                    </div>
+                    <p class="text-secondary small mb-4">
+                        Enter registration number manually for quick eligibility check
+                    </p>
+                    <a href="/check" class="btn btn-check-custom w-100 py-2">
+                        <i class="fas fa-search me-1"></i>Check Now
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Add Vehicle -->
+        <div class="col-md-3">
+            <div class="custom-feature-card h-100">
+                <div class="custom-card-header">
+                    <i class="fas fa-plus-circle me-2"></i>Add Vehicle
+                </div>
+                <div class="custom-card-body p-4">
+                    <div class="custom-card-icon text-yellow my-3">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <p class="text-secondary small mb-4">
+                        Add new vehicles to the database for eligibility tracking
+                    </p>
+                    <a href="/add" class="btn btn-add-custom w-100 py-2">
+                        <i class="fas fa-plus me-1"></i>Add Vehicle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- How It Works Section -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <div class="custom-section-header">
+                <h4 class="mb-0 fs-5"><i class="fas fa-cogs me-2"></i>How It Works</h4>
+            </div>
+            <div class="p-4" style="background-color: #1e2139; border-radius: 0 0 12px 12px;">
+                <div class="row text-center g-3">
+                    <div class="col-md-3">
+                        <div class="p-2">
+                            <div class="fs-1 text-primary mb-2"><i class="fas fa-camera"></i></div>
+                            <h6 class="font-weight-bold">1. Capture</h6>
+                            <p class="text-secondary small mb-0">Capture or upload a license plate image</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2">
+                            <div class="fs-1 text-success mb-2"><i class="fas fa-brain"></i></div>
+                            <h6 class="font-weight-bold">2. AI Detect</h6>
+                            <p class="text-secondary small mb-0">Extract plate text using advanced AI OCR</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2">
+                            <div class="fs-1 text-info mb-2"><i class="fas fa-database"></i></div>
+                            <h6 class="font-weight-bold">3. DB Query</h6>
+                            <p class="text-secondary small mb-0">Check registration date in database</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-2">
+                            <div class="fs-1 text-warning mb-2"><i class="fas fa-check-circle"></i></div>
+                            <h6 class="font-weight-bold">4. Decision</h6>
+                            <p class="text-secondary small mb-0">Instant petrol/diesel age eligibility result</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registered Vehicles Section -->
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <div class="custom-section-header">
+                <h4 class="mb-0 fs-5"><i class="fas fa-car me-2"></i>Registered Vehicles</h4>
+            </div>
+            <div class="p-4" style="background-color: #1e2139; border-radius: 0 0 12px 12px;">
+                <p class="text-secondary small">List of all vehicles currently registered in the database. Click on a registration number to run a manual check.</p>
+                
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover table-striped mb-0" id="registeredVehiclesTable">
+                        <thead>
+                            <tr>
+                                <th>Reg Number</th>
+                                <th>Owner Name</th>
+                                <th>Vehicle Make/Model</th>
+                                <th>Fuel Type</th>
+                                <th>Age (Years)</th>
+                                <th>Fuel Eligibility</th>
+                            </tr>
+                        </thead>
+                        <tbody id="registeredVehiclesBody">
+                            <tr>
+                                <td colspan="6" class="text-center py-3">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="text-secondary mt-2 mb-0 small">Loading registered vehicles...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-3 d-flex justify-content-between align-items-center">
+                    <span id="registeredCount" class="text-secondary small">Total: 0 vehicles</span>
+                    <button id="randomPlateBtn" class="btn btn-success">
+                        <i class="fas fa-random me-1"></i>Try Random Plate
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="custom-section-header">
+                <h4 class="mb-0 fs-5"><i class="fas fa-robot me-2"></i>Chatbot</h4>
+            </div>
+            <div class="p-4" style="background-color: #1e2139; border-radius: 0 0 12px 12px;">
+                <div id="simpleChatLog" class="p-3 mb-3" style="background-color: #141b2d; border: 1px solid var(--border-color); border-radius: 8px; height: 180px; overflow-y: auto; font-family: monospace; font-size: 0.9rem; color: #a5b4fc; scroll-behavior: smooth;">
+                    <div>Bot: Hi! Type 'help' to see what I can do.</div>
+                </div>
+                <div class="d-flex gap-2">
+                    <input id="simpleChatInput" type="text" class="form-control" style="background-color: #141b2d; border-color: var(--border-color); color: var(--text-primary);" placeholder="Type a message (try: help)" autocomplete="off">
+                    <button id="simpleChatSendBtn" class="btn btn-primary px-4" style="background: linear-gradient(135deg, #6366f1, #7c3aed); border: none; font-weight: 600;">Send</button>
+                </div>
+                <div class="text-secondary mt-2" style="font-size: 0.8rem; opacity: 0.75;">
+                    This is a simple helper bot for using SmartFuel.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load registered vehicles
+        loadRegisteredVehicles();
+        
+        // Random plate button
+        document.getElementById('randomPlateBtn').addEventListener('click', function() {
+            fetch('/api/random-plate')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/check?plate=' + data.plate;
+                }
+            });
+        });
+
+        // Chatbot logic
+        const chatLog      = document.getElementById('simpleChatLog');
+        const chatInput    = document.getElementById('simpleChatInput');
+        const chatSendBtn  = document.getElementById('simpleChatSendBtn');
+
+        function appendChatLine(sender, text) {
+            const line = document.createElement('div');
+            line.style.marginBottom = '6px';
+            line.textContent = `${sender}: ${text}`;
+            chatLog.appendChild(line);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        async function sendChatMessage() {
+            const msg = (chatInput.value || '').trim();
+            if (!msg) return;
+            chatInput.value = '';
+            appendChatLine('User', msg);
+            try {
+                const res  = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+                appendChatLine('Bot', data && data.reply ? data.reply : 'Sorry, something went wrong.');
+            } catch(e) {
+                appendChatLine('Bot', 'Network error. Please try again.');
+            }
+        }
+
+        chatSendBtn.addEventListener('click', sendChatMessage);
+        chatInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); sendChatMessage(); }
+        });
+    });
+    
+    function loadRegisteredVehicles() {
+        fetch('/api/vehicles?per_page=100')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const tbody = document.getElementById('registeredVehiclesBody');
+                const countText = document.getElementById('registeredCount');
+                tbody.innerHTML = '';
+                
+                countText.textContent = `Total: ${data.total_vehicles} vehicles`;
+                
+                if (!data.vehicles || data.vehicles.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-secondary">No vehicles found in database.</td></tr>';
+                    return;
+                }
+                
+                data.vehicles.forEach(vehicle => {
+                    const tr = document.createElement('tr');
+                    
+                    // Reg number (clickable link)
+                    const tdReg = document.createElement('td');
+                    tdReg.innerHTML = `<a href="/check?plate=${vehicle.registration_number}" class="text-info font-weight-bold" style="text-decoration: none;">${vehicle.registration_number}</a>`;
+                    
+                    // Owner Name
+                    const tdOwner = document.createElement('td');
+                    tdOwner.textContent = vehicle.owner_name || 'N/A';
+                    
+                    // Make/Model
+                    const tdModel = document.createElement('td');
+                    const make = vehicle.vehicle_make || '';
+                    const model = vehicle.vehicle_model || '';
+                    tdModel.textContent = (make || model) ? `${make} ${model}`.trim() : 'N/A';
+                    
+                    // Fuel Type
+                    const tdFuel = document.createElement('td');
+                    tdFuel.innerHTML = `<span class="badge bg-secondary">${vehicle.fuel_type || 'N/A'}</span>`;
+                    
+                    // Age
+                    const tdAge = document.createElement('td');
+                    tdAge.textContent = vehicle.age_years !== null ? `${vehicle.age_years.toFixed(1)} yrs` : 'N/A';
+                    
+                    // Eligibility
+                    const tdEligible = document.createElement('td');
+                    const eligible = vehicle.fuel_eligibility ? vehicle.fuel_eligibility.eligible : true;
+                    if (eligible) {
+                        tdEligible.innerHTML = `<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Eligible</span>`;
+                    } else {
+                        tdEligible.innerHTML = `<span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Ineligible</span>`;
+                    }
+                    
+                    tr.appendChild(tdReg);
+                    tr.appendChild(tdOwner);
+                    tr.appendChild(tdModel);
+                    tr.appendChild(tdFuel);
+                    tr.appendChild(tdAge);
+                    tr.appendChild(tdEligible);
+                    
+                    tbody.appendChild(tr);
+                });
+            } else {
+                const tbody = document.getElementById('registeredVehiclesBody');
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-danger">Error loading vehicle list</td></tr>';
+            }
+        })
+        .catch(error => {
+            const tbody = document.getElementById('registeredVehiclesBody');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-danger">Error loading vehicle list</td></tr>';
+            console.error('Error:', error);
+        });
+    }
+</script>
+{% endblock %}
