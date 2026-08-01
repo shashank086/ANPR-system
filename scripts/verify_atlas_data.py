@@ -10,7 +10,7 @@ def verify_atlas_data():
     """Verify the data import to MongoDB Atlas"""
     try:
         # Connect to MongoDB Atlas
-        connection_string = "mongodb+srv://shashankraichur987_db_user:bgD5RKzToNX7zQDu@anprcluster.rwl9k7j.mongodb.net/?retryWrites=true&w=majority&appName=anprcluster"
+        connection_string = "mongodbcluster link"
         client = MongoClient(connection_string)
         db = client['anpr_database']
         collection = db['vehicles']
